@@ -25,20 +25,6 @@ except ModuleNotFoundError:
 
 app = FastAPI(title="Backtest Dashboard API", version="1.0.0")
 
-# Serve frontend static files when running in Docker (static dir may not exist in dev)
-_static_path = Path(__file__).resolve().parent / "static"
-if _static_path.exists():
-    app.mount("/assets", StaticFiles(directory=_static_path / "assets"), name="assets")
-    @app.get("/", response_class=FileResponse)
-    def index():
-        return FileResponse(_static_path / "index.html")
-    @app.get("/index.html", response_class=FileResponse)
-    def index_html():
-        return FileResponse(_static_path / "index.html")
-    @app.api_route("/{path:path}", methods=["GET"], response_class=FileResponse)
-    def spa_catchall(path: str):
-        """Serve index.html for client-side routes."""
-        return FileResponse(_static_path / "index.html")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -184,3 +170,22 @@ def list_strategies():
         ],
         "default_symbol": DEFAULT_SYMBOL,
     }
+
+
+# Serve frontend static files when running in Docker (must be registered AFTER API routes)
+_static_path = Path(__file__).resolve().parent / "static"
+if _static_path.exists():
+    app.mount("/assets", StaticFiles(directory=_static_path / "assets"), name="assets")
+
+    @app.get("/", response_class=FileResponse)
+    def index():
+        return FileResponse(_static_path / "index.html")
+
+    @app.get("/index.html", response_class=FileResponse)
+    def index_html():
+        return FileResponse(_static_path / "index.html")
+
+    @app.api_route("/{path:path}", methods=["GET"], response_class=FileResponse)
+    def spa_catchall(path: str):
+        """Serve index.html for all non-API client-side routes."""
+        return FileResponse(_static_path / "index.html")
