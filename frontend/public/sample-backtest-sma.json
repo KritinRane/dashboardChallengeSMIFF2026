@@ -1,0 +1,8 @@
+{
+  "start_date": "2024-01-01",
+  "end_date": "2024-12-31",
+  "symbol": "AAPL",
+  "strategy": "sma_crossover",
+  "fast_period": 10,
+  "slow_period": 30
+}
